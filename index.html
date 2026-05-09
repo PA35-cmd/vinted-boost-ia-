@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Vinted Boost IA 🤖</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0a0f1a;
+  --bg2:#0d1520;
+  --bg3:#111c2d;
+  --border:#1e2d3d;
+  --accent:#00d4aa;
+  --accent2:#6366f1;
+  --text:#fff;
+  --text2:#8b9ab0;
+  --red:#ef4444;
+  --orange:#f59e0b;
+  --green:#22c55e;
+}
+body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* SETUP */
+.setup-overlay{position:fixed;inset:0;background:#0a0f1aee;display:flex;align-items:center;justify-content:center;z-index:100;padding:20px;}
+.setup-card{background:var(--bg2);border:1px solid var(--accent);border-radius:20px;padding:36px;max-width:460px;width:100%;text-align:center;}
+.setup-logo{font-size:48px;margin-bottom:12px;}
+.setup-title{font-size:22px;font-weight:800;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px;}
+.setup-sub{font-size:13px;color:var(--text2);margin-bottom:24px;line-height:1.6;}
+.setup-steps{text-align:left;margin-bottom:20px;display:flex;flex-direction:column;gap:10px;}
+.setup-step{display:flex;gap:10px;align-items:flex-start;background:var(--bg3);border-radius:10px;padding:10px 12px;}
+.setup-step-num{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px;}
+.setup-step-text{font-size:13px;color:var(--text2);line-height:1.5;}
+.setup-step-text b{color:var(--text);}
+.setup-step-text a{color:var(--accent);text-decoration:none;}
+.key-input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--text);font-family:monospace;margin-bottom:10px;outline:none;}
+.key-input:focus{border-color:var(--accent);}
+.btn-save{width:100%;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-weight:700;font-size:14px;cursor:pointer;}
+
+/* MAIN */
+.app{max-width:760px;margin:0 auto;padding:20px 16px;}
+
+/* HEADER */
+.header{display:flex;align-items:center;gap:14px;margin-bottom:24px;padding:16px 20px;background:var(--bg2);border-radius:16px;border:1px solid var(--border);}
+.header-logo{font-size:30px;}
+.header-title{font-size:20px;font-weight:800;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.header-sub{font-size:12px;color:var(--text2);}
+.header-key{margin-left:auto;font-size:11px;padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;}
+
+/* TABS */
+.tabs{display:flex;gap:4px;background:var(--bg2);border-radius:12px;padding:5px;margin-bottom:20px;border:1px solid var(--border);overflow-x:auto;}
+.tab{padding:8px 14px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:500;white-space:nowrap;background:transparent;color:var(--text2);transition:.15s;flex-shrink:0;}
+.tab.active{background:linear-gradient(135deg,var(--accent)22,var(--accent2)22);color:var(--accent);border:1px solid var(--accent)44;}
+
+/* CARDS */
+.card{background:var(--bg2);border-radius:16px;border:1px solid var(--border);padding:20px;margin-bottom:16px;}
+.card-title{font-size:15px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.card-title .icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;background:var(--accent)18;}
+
+/* INPUTS */
+textarea,input[type=text]{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:13px;font-family:inherit;color:var(--text);outline:none;transition:.15s;}
+textarea{resize:vertical;min-height:90px;}
+textarea:focus,input:focus{border-color:var(--accent);}
+.input-label{font-size:12px;color:var(--text2);margin-bottom:6px;font-weight:500;}
+
+/* BUTTONS */
+.btn{padding:11px 20px;border-radius:10px;border:none;font-weight:600;font-size:13px;cursor:pointer;transition:.15s;}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text2);}
+.btn-copy{font-size:12px;padding:5px 12px;border-radius:7px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;transition:.15s;}
+.btn-copy.ok{border-color:var(--green);color:var(--green);}
+
+/* RESULT */
+.result-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;}
+.result-title{font-size:17px;font-weight:700;flex:1;margin-right:12px;line-height:1.3;}
+.score-wrap{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.score-ring{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:17px;}
+.score-label{font-size:11px;color:var(--text2);text-align:center;}
+
+.prices{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;}
+.price-box{text-align:center;padding:12px 8px;border-radius:12px;}
+.price-label{font-size:11px;color:var(--text2);margin-bottom:4px;}
+.price-val{font-size:22px;font-weight:800;}
+
+.badges{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
+.badge{font-size:11px;padding:4px 10px;border-radius:20px;background:var(--bg3);color:var(--text2);border:1px solid var(--border);}
+
+.desc-box{background:var(--bg3);border-radius:10px;padding:12px 14px;font-size:13px;line-height:1.7;color:var(--text2);margin-bottom:14px;}
+.tags-wrap{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
+.tag{font-size:12px;padding:4px 10px;border-radius:20px;background:var(--accent2)18;color:var(--accent2);border:1px solid var(--accent2)33;}
+
+.astuce-box{background:var(--green)0d;border:1px solid var(--green)33;border-radius:10px;padding:12px 14px;font-size:13px;color:#86efac;margin-bottom:10px;}
+.raison{font-size:11px;color:var(--text2);}
+
+.row-sb{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.section-label{font-size:13px;font-weight:600;color:var(--text);}
+
+/* ALERTS */
+.alert{border-radius:12px;padding:13px 16px;margin-bottom:14px;display:flex;gap:12px;align-items:flex-start;font-size:13px;line-height:1.6;}
+.alert-green{background:var(--green)0d;border:1px solid var(--green)33;color:#86efac;}
+.alert-orange{background:var(--orange)0d;border:1px solid var(--orange)33;color:#fcd34d;}
+.alert-red{background:var(--red)0d;border:1px solid var(--red)33;color:#fca5a5;}
+.alert b{color:#fff;}
+
+/* LOADER */
+.loader{display:flex;align-items:center;gap:12px;padding:20px;color:var(--accent);font-size:13px;}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--accent);}
+@keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-8px)}}
+
+/* GRID */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.full{grid-column:1/-1;}
+
+/* TENDANCES */
+.trend-item{padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--text2);display:flex;align-items:center;gap:8px;}
+.trend-item:last-child{border-bottom:none;}
+
+/* CONSEILS */
+.conseil-card{background:var(--bg2);border-radius:14px;border:1px solid var(--border);padding:16px;}
+.conseil-icon{font-size:24px;margin-bottom:8px;}
+.conseil-title{font-weight:700;font-size:13px;margin-bottom:5px;}
+.conseil-text{font-size:13px;color:var(--text2);line-height:1.5;}
+
+/* PHOTOS */
+.photo-row{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--border);align-items:flex-start;}
+.photo-row:last-child{border-bottom:none;}
+.photo-icon{width:42px;height:42px;border-radius:10px;background:var(--accent2)18;border:1px solid var(--accent2)33;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.photo-num{font-weight:700;color:var(--accent);font-size:13px;margin-bottom:3px;}
+.photo-title{font-weight:600;font-size:13px;margin-bottom:4px;}
+.photo-conseil{font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:4px;}
+.photo-why{font-size:12px;color:var(--accent2);font-style:italic;}
+
+/* MARCHE */
+.marche-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.marche-row:last-child{border-bottom:none;}
+.vert{color:var(--green);font-weight:600;}
+.rouge{color:var(--red);font-weight:600;}
+
+.variante-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);}
+.variante-row:last-child{border-bottom:none;}
+
+/* HISTORIQUE */
+.hist-item{background:var(--bg2);border-radius:12px;border:1px solid var(--border);padding:14px 16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:flex-start;}
+
+/* CHECKLIST */
+.check-item{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.check-item:last-child{border-bottom:none;}
+.check-box{width:22px;height:22px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;}
+.check-box.done{background:var(--green)22;border-color:var(--green);color:var(--green);}
+.check-text{color:var(--text2);line-height:1.4;}
+.check-text b{color:var(--text);}
+
+/* SIMULATEUR */
+.sim-result{background:var(--bg3);border-radius:12px;padding:16px;margin-top:14px;}
+.sim-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.sim-row:last-child{border-bottom:none;font-weight:700;font-size:15px;}
+.sim-total{color:var(--accent);}
+
+@media(max-width:500px){.grid2{grid-template-columns:1fr;}.prices{grid-template-columns:1fr 1fr;}}
+</style>
+</head>
+<body>
+
+<!-- SETUP -->
+<div class="setup-overlay" id="setup">
+  <div class="setup-card">
+    <div class="setup-logo">🤖</div>
+    <div class="setup-title">Vinted Boost IA</div>
+    <div class="setup-sub">Entre ta clé API Anthropic pour activer l'outil.<br>Gratuit — tu reçois des crédits offerts à l'inscription.</div>
+    <div class="setup-steps">
+      <div class="setup-step"><div class="setup-step-num">1</div><div class="setup-step-text">Va sur <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> et crée un compte gratuit</div></div>
+      <div class="setup-step"><div class="setup-step-num">2</div><div class="setup-step-text">Clique sur <b>API Keys</b> → <b>Create Key</b> → copie ta clé</div></div>
+      <div class="setup-step"><div class="setup-step-num">3</div><div class="setup-step-text">Colle-la ci-dessous et clique sur Activer</div></div>
+    </div>
+    <input class="key-input" type="password" id="key-input" placeholder="sk-ant-api03-..."/>
+    <button class="btn-save" onclick="saveKey()">⚡ Activer Vinted Boost IA</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="app" id="main" style="display:none;">
+  <div class="header">
+    <div class="header-logo">🤖</div>
+    <div>
+      <div class="header-title">Vinted Boost IA</div>
+      <div class="header-sub">Ton assistant vendeur intelligent</div>
+    </div>
+    <button class="header-key" onclick="resetKey()">🔑 Changer clé</button>
+  </div>
+
+  <div class="tabs" id="tabs">
+    <button class="tab active" onclick="showTab('annonce')">📝 Annonce</button>
+    <button class="tab" onclick="showTab('photos')">📸 Photos & Marché</button>
+    <button class="tab" onclick="showTab('negociation')">💬 Négociation</button>
+    <button class="tab" onclick="showTab('simulateur')">💶 Simulateur</button>
+    <button class="tab" onclick="showTab('checklist')">✅ Checklist</button>
+    <button class="tab" onclick="showTab('tendances')">🔥 Tendances</button>
+    <button class="tab" onclick="showTab('conseils')">💡 Conseils</button>
+    <button class="tab" onclick="showTab('historique')">🕐 Historique</button>
+  </div>
+
+  <!-- ANNONCE -->
+  <div id="tab-annonce">
+    <div class="card">
+      <div class="card-title"><div class="icon">📝</div>Décris ton article</div>
+      <div class="input-label">Marque, taille, couleur, état, défauts... Plus tu es précis, meilleure est l'annonce.</div>
+      <textarea id="input-article" placeholder="Ex : jean Levi's 501 taille 38, bleu délavé, bon état, porté 3 fois, pas de taches ni déchirures..."></textarea>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;">
+        <span style="font-size:11px;color:var(--text2);">🎯 Sois précis → meilleure annonce</span>
+        <button class="btn btn-primary" id="btn-gen" onclick="genAnnonce()">✨ Générer l'annonce</button>
+      </div>
+    </div>
+    <div id="err-annonce"></div>
+    <div id="load-annonce"></div>
+    <div id="res-annonce"></div>
+  </div>
+
+  <!-- PHOTOS & MARCHE -->
+  <div id="tab-photos" style="display:none;">
+    <div class="card">
+      <div class="card-title"><div class="icon">🔍</div>Analyse marché + guide photos</div>
+      <div class="input-label">Nom du produit à analyser</div>
+      <input type="text" id="input-produit" placeholder="Ex : Nike Air Force 1 blanc taille 42, Veste Zara bleue S..."/>
+      <div style="display:flex;justify-content:flex-end;margin-top:12px;">
+        <button class="btn btn-primary" id="btn-marche" onclick="genMarche()">🔍 Analyser</button>
+      </div>
+    </div>
+    <div id="err-marche"></div>
+    <div id="load-marche"></div>
+    <div id="res-marche"></div>
+  </div>
+
+  <!-- NEGOCIATION -->
+  <div id="tab-negociation" style="display:none;">
+    <div class="card">
+      <div class="card-title"><div class="icon">💬</div>Réponse à une offre</div>
+      <div class="input-label">Décris la situation</div>
+      <textarea id="input-nego" placeholder="Ex : je vends un jean 28€, quelqu'un m'offre 15€, je veux pas descendre sous 22€..."></textarea>
+      <div style="display:flex;justify-content:flex-end;margin-top:12px;">
+        <button class="btn btn-primary" id="btn-nego" onclick="genNego()">💬 Générer la réponse</button>
+      </div>
+    </div>
+    <div id="err-nego"></div>
+    <div id="load-nego"></div>
+    <div id="res-nego"></div>
+  </div>
+
+  <!-- SIMULATEUR -->
+  <div id="tab-simulateur" style="display:none;">
+    <div class="card">
+      <div class="card-title"><div class="icon">💶</div>Simulateur de gains</div>
+      <div class="input-label">Prix de vente (€)</div>
+      <input type="text" id="sim-prix" placeholder="Ex: 25" oninput="calcSim()"/>
+      <div class="input-label" style="margin-top:12px;">Prix d'achat (€) — optionnel</div>
+      <input type="text" id="sim-achat" placeholder="Ex: 10" oninput="calcSim()"/>
+      <div id="sim-result"></div>
+    </div>
+  </div>
+
+  <!-- CHECKLIST -->
+  <div id="tab-checklist" style="display:none;">
+    <div class="card">
+      <div class="card-title"><div class="icon">✅</div>Checklist avant publication</div>
+      <div id="checklist-items"></div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;">
+      <button class="btn btn-ghost" onclick="resetChecklist()" style="font-size:12px;padding:7px 14px;">🔄 Réinitialiser</button>
+    </div>
+  </div>
+
+  <!-- TENDANCES -->
+  <div id="tab-tendances" style="display:none;">
+    <div class="grid2">
+      <div class="card"><div class="card-title"><div class="icon">👗</div>Femme</div>
+        <div class="trend-item">🔥 Robes longues fleuries</div><div class="trend-item">🔥 Blazers oversize</div>
+        <div class="trend-item">🔥 Cardigans Y2K</div><div class="trend-item">🔥 Jeans wide leg</div><div class="trend-item">🔥 Tops crop crochet</div>
+      </div>
+      <div class="card"><div class="card-title"><div class="icon">👕</div>Homme</div>
+        <div class="trend-item">🔥 Hoodies vintage</div><div class="trend-item">🔥 Cargos baggy</div>
+        <div class="trend-item">🔥 Polos Lacoste</div><div class="trend-item">🔥 Vestes workwear</div><div class="trend-item">🔥 Tee oversize vintage</div>
+      </div>
+      <div class="card"><div class="card-title"><div class="icon">👟</div>Sneakers</div>
+        <div class="trend-item">🔥 Nike Air Force 1</div><div class="trend-item">🔥 New Balance 574</div>
+        <div class="trend-item">🔥 Adidas Samba</div><div class="trend-item">🔥 Puma Suede</div><div class="trend-item">🔥 Salomon Trail</div>
+      </div>
+      <div class="card"><div class="card-title"><div class="icon">👜</div>Accessoires</div>
+        <div class="trend-item">🔥 Mini sacs</div><div class="trend-item">🔥 Ceintures Y2K</div>
+        <div class="trend-item">🔥 Casquettes vintage</div><div class="trend-item">🔥 Lunettes 90s</div><div class="trend-item">🔥 Bijoux dorés chunky</div>
+      </div>
+      <div class="card full" style="background:#f59e0b0d;border-color:#f59e0b33;">
+        <div class="card-title"><div class="icon" style="background:#f59e0b18;">⚡</div>Meilleurs moments pour publier</div>
+        <div style="font-size:13px;color:var(--text2);line-height:2;">
+          📅 <b style="color:#fff;">Dimanche 18h-21h</b> = pic de visites sur Vinted<br>
+          🌤️ <b style="color:#fff;">Mars & Septembre</b> = changements saison, ventes x3<br>
+          🛍️ <b style="color:#fff;">Août-Rentrée</b> = très forte activité acheteurs<br>
+          ❄️ <b style="color:#fff;">Début janvier</b> = bonnes affaires, vendeurs actifs
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONSEILS -->
+  <div id="tab-conseils" style="display:none;">
+    <div class="grid2" id="conseils-grid"></div>
+  </div>
+
+  <!-- HISTORIQUE -->
+  <div id="tab-historique" style="display:none;">
+    <div id="hist-zone"><div style="text-align:center;padding:3rem;color:var(--text2);font-size:14px;">Aucune annonce générée pour l'instant.<br>Crée ta première annonce !</div></div>
+  </div>
+</div>
+
+<script>
+var TABS=['annonce','photos','negociation','simulateur','checklist','tendances','conseils','historique'];
+var history=[];
+var checks=[false,false,false,false,false,false,false,false,false,false];
+var API_KEY=localStorage.getItem('vinted_key')||'';
+
+var CHECKLIST_ITEMS=[
+  {text:'<b>Titre accrocheur</b> avec la marque et les mots-clés importants'},
+  {text:'<b>Prix juste</b> — vérifié par rapport au marché Vinted'},
+  {text:'<b>Description complète</b> — état, matière, taille, défauts'},
+  {text:'<b>5 photos minimum</b> — fond blanc, bonne lumière'},
+  {text:'<b>Photo des défauts</b> — même petits, ça rassure l\'acheteur'},
+  {text:'<b>Étiquette ou taille</b> visible en photo'},
+  {text:'<b>Tags remplis</b> — minimum 5 tags pertinents'},
+  {text:'<b>Mondial Relay activé</b> en option de livraison'},
+  {text:'<b>Colissimo activé</b> en option de livraison'},
+  {text:'<b>Profil complet</b> — photo de profil et description vendeur'},
+];
+
+var CONSEILS_DATA=[
+  {icon:'📸',titre:'Photos',texte:'5-8 photos minimum. Fond blanc, lumière naturelle. Montre les défauts de près — ça rassure l\'acheteur et évite les litiges.'},
+  {icon:'⚡',titre:'Réactivité',texte:'Réponds aux messages en moins d\'1h. Les vendeurs réactifs vendent 3x plus vite selon les stats Vinted.'},
+  {icon:'📦',titre:'Livraison',texte:'Active toujours Mondial Relay ET Colissimo. Deux options = +40% de chances de conclure la vente.'},
+  {icon:'🏷️',titre:'Prix stratégique',texte:'Mets le prix légèrement au-dessus de ton minimum. L\'acheteur négocie, tu descends, il est content. Tout le monde gagne.'},
+  {icon:'🔁',titre:'Republier',texte:'Republie tes articles tous les 3-4 jours pour rester dans les résultats "récents". C\'est gratuit et très efficace.'},
+  {icon:'❤️',titre:'Astuce Favoris',texte:'Article avec +5 favoris ? Baisse le prix de 10% → Vinted envoie une notification à tous ceux qui l\'ont mis en favori.'},
+  {icon:'🎯',titre:'Description parfaite',texte:'Mentionne toujours taille, matière, état et défauts. Plus c\'est précis, moins tu as de questions et plus tu inspires confiance.'},
+  {icon:'💬',titre:'Négociation',texte:'Accepte une offre raisonnable plutôt qu\'attendre. Un article vendu à 80% du prix vaut mieux qu\'un article qui dort 3 mois.'},
+];
+
+function init(){
+  if(API_KEY){
+    document.getElementById('setup').style.display='none';
+    document.getElementById('main').style.display='block';
+  } else {
+    document.getElementById('setup').style.display='flex';
+    document.getElementById('main').style.display='none';
+  }
+  renderChecklist();
+  renderConseils();
+}
+
+function saveKey(){
+  var k=document.getElementById('key-input').value.trim();
+  if(!k){alert('Entre ta clé API !');return;}
+  API_KEY=k;
+  localStorage.setItem('vinted_key',k);
+  document.getElementById('setup').style.display='none';
+  document.getElementById('main').style.display='block';
+}
+function resetKey(){
+  if(!confirm('Changer de clé API ?'))return;
+  localStorage.removeItem('vinted_key');
+  API_KEY='';
+  document.getElementById('key-input').value='';
+  document.getElementById('setup').style.display='flex';
+  document.getElementById('main').style.display='none';
+}
+
+function showTab(t){
+  TABS.forEach(function(id){document.getElementById('tab-'+id).style.display=id===t?'':'none';});
+  document.querySelectorAll('.tab').forEach(function(btn,i){btn.classList.toggle('active',TABS[i]===t);});
+}
+
+function loader(id){return '<div class="loader"><div class="dot" style="animation:bounce .8s 0ms infinite"></div><div class="dot" style="animation:bounce .8s 150ms infinite"></div><div class="dot" style="animation:bounce .8s 300ms infinite"></div><span>Analyse en cours...</span></div>';}
+
+async function callClaude(system,user){
+  var res=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':API_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1200,system:system,messages:[{role:'user',content:user}]})
+  });
+  var data=await res.json();
+  var txt=(data.content||[]).map(function(b){return b.text||'';}).join('');
+  return JSON.parse(txt.replace(/```json|```/g,'').trim());
+}
+
+var SYS_ANNONCE='Tu es expert Vinted vendeur pro français. Réponds UNIQUEMENT en JSON valide sans markdown: {"titre":"max 55 car accrocheur","prix":25,"prix_min":18,"prix_max":35,"description":"3-4 phrases vendeuses 2-3 emojis concis","marque":"marque","categorie":"catégorie Vinted","etat":"état exact","tags":["t1","t2","t3","t4","t5"],"astuce":"conseil court max 20 mots","score":8,"raison":"explication courte"}';
+
+var SYS_MARCHE='Tu es expert Vinted marché France. Réponds UNIQUEMENT en JSON valide sans markdown: {"fourchette":"15-35 euros","prix_conseille":25,"vendu_vite":true,"analyse":"2 phrases vendabilité","erreurs":["e1","e2"],"photos":[{"num":1,"titre":"Photo principale","emoji":"🖼️","conseil":"instructions précises","pourquoi":"importance"},{"num":2,"titre":"Détail matière","emoji":"🔍","conseil":"...","pourquoi":"..."},{"num":3,"titre":"Étiquette marque","emoji":"🏷️","conseil":"...","pourquoi":"..."},{"num":4,"titre":"Vue de dos","emoji":"↩️","conseil":"...","pourquoi":"..."},{"num":5,"titre":"Défauts","emoji":"⚠️","conseil":"...","pourquoi":"..."},{"num":6,"titre":"Mise en situation","emoji":"✨","conseil":"...","pourquoi":"..."}],"score_marche":8,"conseil_prix":"1 phrase","saison_ideale":"saison","acheteur_type":"profil","mots_cles":["m1","m2","m3"],"variantes":[{"etat":"Neuf","prix":35},{"etat":"Très bon état","prix":25},{"etat":"Bon état","prix":18}]}';
+
+var SYS_NEGO='Tu es expert négociation Vinted. Réponds UNIQUEMENT en JSON valide sans markdown: {"reponse_polie":"message poli pour refuser ou contrer","reponse_ferme":"message ferme mais sympa","reponse_compromis":"proposition de compromis","conseil":"1 conseil sur cette situation","accepter":false}';
+
+async function genAnnonce(){
+  var val=document.getElementById('input-article').value.trim();
+  if(!val)return;
+  document.getElementById('err-annonce').innerHTML='';
+  document.getElementById('res-annonce').innerHTML='';
+  document.getElementById('load-annonce').innerHTML=loader();
+  document.getElementById('btn-gen').disabled=true;
+  try{
+    var j=await callClaude(SYS_ANNONCE,val);
+    document.getElementById('load-annonce').innerHTML='';
+    renderAnnonce(j,document.getElementById('res-annonce'));
+    addHistory(val,j);
+  }catch(e){
+    document.getElementById('load-annonce').innerHTML='';
+    document.getElementById('err-annonce').innerHTML='<div class="alert alert-red">❌ Erreur. Vérifie ta clé API et réessaie.</div>';
+  }
+  document.getElementById('btn-gen').disabled=false;
+}
+
+async function genMarche(){
+  var val=document.getElementById('input-produit').value.trim();
+  if(!val)return;
+  document.getElementById('err-marche').innerHTML='';
+  document.getElementById('res-marche').innerHTML='';
+  document.getElementById('load-marche').innerHTML=loader();
+  document.getElementById('btn-marche').disabled=true;
+  try{
+    var j=await callClaude(SYS_MARCHE,val);
+    document.getElementById('load-marche').innerHTML='';
+    renderMarche(j,val,document.getElementById('res-marche'));
+  }catch(e){
+    document.getElementById('load-marche').innerHTML='';
+    document.getElementById('err-marche').innerHTML='<div class="alert alert-red">❌ Erreur. Vérifie ta clé API et réessaie.</div>';
+  }
+  document.getElementById('btn-marche').disabled=false;
+}
+
+async function genNego(){
+  var val=document.getElementById('input-nego').value.trim();
+  if(!val)return;
+  document.getElementById('err-nego').innerHTML='';
+  document.getElementById('res-nego').innerHTML='';
+  document.getElementById('load-nego').innerHTML=loader();
+  document.getElementById('btn-nego').disabled=true;
+  try{
+    var j=await callClaude(SYS_NEGO,val);
+    document.getElementById('load-nego').innerHTML='';
+    renderNego(j,document.getElementById('res-nego'));
+  }catch(e){
+    document.getElementById('load-nego').innerHTML='';
+    document.getElementById('err-nego').innerHTML='<div class="alert alert-red">❌ Erreur. Vérifie ta clé API et réessaie.</div>';
+  }
+  document.getElementById('btn-nego').disabled=false;
+}
+
+function renderAnnonce(j,zone){
+  var sc=j.score||7;
+  var col=sc>=8?'#22c55e':sc>=6?'#f59e0b':'#ef4444';
+  var d=document.createElement('div');
+  d.className='card';
+
+  // Header
+  var hd=document.createElement('div');hd.className='result-header';
+  var ti=document.createElement('div');ti.className='result-title';ti.textContent=j.titre;
+  var sw=document.createElement('div');sw.className='score-wrap';
+  var ring=document.createElement('div');ring.className='score-ring';
+  ring.style.cssText='border:2px solid '+col+';color:'+col+';';ring.textContent=sc;
+  var sl=document.createElement('div');sl.className='score-label';sl.textContent='/10';
+  sw.appendChild(ring);sw.appendChild(sl);hd.appendChild(ti);hd.appendChild(sw);d.appendChild(hd);
+
+  // Prices
+  var pg=document.createElement('div');pg.className='prices';
+  [['Prix conseillé',j.prix+' €','#00d4aa'],['Min acceptable',j.prix_min+' €','#22c55e'],['Max espéré',j.prix_max+' €','#f59e0b']].forEach(function(p){
+    var b=document.createElement('div');b.className='price-box';b.style.background=p[2]+'18';
+    var l=document.createElement('div');l.className='price-label';l.textContent=p[0];
+    var v=document.createElement('div');v.className='price-val';v.style.color=p[2];v.textContent=p[1];
+    b.appendChild(l);b.appendChild(v);pg.appendChild(b);
+  });
+  d.appendChild(pg);
+
+  // Badges
+  var bg=document.createElement('div');bg.className='badges';
+  [j.categorie,j.etat,j.marque].filter(Boolean).forEach(function(b){
+    var s=document.createElement('span');s.className='badge';s.textContent=b;bg.appendChild(s);
+  });
+  d.appendChild(bg);
+
+  // Description
+  var dr=document.createElement('div');dr.className='row-sb';
+  var dl=document.createElement('span');dl.className='section-label';dl.textContent='📝 Description';
+  var cb=document.createElement('button');cb.className='btn-copy';cb.textContent='Copier';
+  cb.onclick=function(){navigator.clipboard.writeText(j.description);cb.textContent='✓ Copié';cb.classList.add('ok');setTimeout(function(){cb.textContent='Copier';cb.classList.remove('ok');},2000);};
+  dr.appendChild(dl);dr.appendChild(cb);d.appendChild(dr);
+  var db=document.createElement('div');db.className='desc-box';db.textContent=j.description;d.appendChild(db);
+
+  // Tags
+  var tl=document.createElement('div');tl.className='section-label';tl.style.marginBottom='8px';tl.textContent='🏷️ Tags';d.appendChild(tl);
+  var tg=document.createElement('div');tg.className='tags-wrap';tg.style.marginBottom='14px';
+  (j.tags||[]).forEach(function(t){var s=document.createElement('span');s.className='tag';s.textContent='#'+t;tg.appendChild(s);});
+  d.appendChild(tg);
+
+  // Astuce
+  var a=document.createElement('div');a.className='astuce-box';a.textContent='💡 '+j.astuce;d.appendChild(a);
+  var r=document.createElement('div');r.className='raison';r.style.marginTop='8px';r.textContent=j.raison;d.appendChild(r);
+
+  zone.innerHTML='';zone.appendChild(d);
+}
+
+function renderMarche(j,produit,zone){
+  zone.innerHTML='';
+  var sc=j.score_marche||7;
+  var col=sc>=8?'#22c55e':sc>=6?'#f59e0b':'#ef4444';
+
+  // Card principale
+  var c1=document.createElement('div');c1.className='card';
+  var hd=document.createElement('div');hd.className='result-header';
+  var ht=document.createElement('div');
+  var hn=document.createElement('div');hn.style.cssText='font-size:15px;font-weight:700;';hn.textContent=produit;
+  var hf=document.createElement('div');hf.style.cssText='font-size:12px;color:var(--text2);margin-top:3px;';hf.innerHTML='Fourchette estimée : <b style="color:#fff;">'+j.fourchette+'</b>';
+  ht.appendChild(hn);ht.appendChild(hf);
+  var sw=document.createElement('div');sw.className='score-wrap';
+  var ring=document.createElement('div');ring.className='score-ring';ring.style.cssText='border:2px solid '+col+';color:'+col+';';ring.textContent=sc;
+  var sl=document.createElement('div');sl.className='score-label';sl.textContent='/10 marché';
+  sw.appendChild(ring);sw.appendChild(sl);hd.appendChild(ht);hd.appendChild(sw);c1.appendChild(hd);
+
+  [['Prix conseillé',j.prix_conseille+' €',true],['Se vend vite ?',j.vendu_vite?'✓ Oui':'⚠ Lentement',j.vendu_vite]].forEach(function(row){
+    var r=document.createElement('div');r.className='marche-row';
+    var l=document.createElement('span');l.style.color='var(--text2)';l.textContent=row[0];
+    var v=document.createElement('span');v.className=row[2]?'vert':'rouge';v.textContent=row[1];
+    r.appendChild(l);r.appendChild(v);c1.appendChild(r);
+  });
+
+  var an=document.createElement('div');an.style.cssText='font-size:13px;color:var(--text2);margin:12px 0;line-height:1.6;';an.textContent=j.analyse;c1.appendChild(an);
+  var cp=document.createElement('div');cp.className='alert alert-orange';cp.innerHTML='💰 '+j.conseil_prix;c1.appendChild(cp);
+
+  if(j.saison_ideale){var si=document.createElement('div');si.style.cssText='font-size:13px;color:var(--text2);margin-bottom:6px;';si.innerHTML='📅 <b style="color:#fff;">Meilleure saison :</b> '+j.saison_ideale;c1.appendChild(si);}
+  if(j.acheteur_type){var at=document.createElement('div');at.style.cssText='font-size:13px;color:var(--text2);margin-bottom:12px;';at.innerHTML='🎯 <b style="color:#fff;">Acheteur type :</b> '+j.acheteur_type;c1.appendChild(at);}
+
+  if((j.mots_cles||[]).length){
+    var ml=document.createElement('div');ml.style.cssText='font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px;';ml.textContent='🔍 Mots-clés recherchés par les acheteurs';c1.appendChild(ml);
+    var mt=document.createElement('div');mt.className='tags-wrap';
+    j.mots_cles.forEach(function(m){var s=document.createElement('span');s.className='tag';s.textContent=m;mt.appendChild(s);});
+    c1.appendChild(mt);
+  }
+  zone.appendChild(c1);
+
+  // Variantes prix
+  if((j.variantes||[]).length){
+    var c2=document.createElement('div');c2.className='card';
+    var vt=document.createElement('div');vt.className='card-title';vt.innerHTML='<div class="icon">💶</div>Prix selon l\'état';c2.appendChild(vt);
+    j.variantes.forEach(function(v){
+      var r=document.createElement('div');r.className='variante-row';
+      var l=document.createElement('span');l.style.cssText='font-size:13px;color:var(--text2);';l.textContent=v.etat;
+      var p=document.createElement('span');p.style.cssText='font-weight:800;font-size:17px;color:var(--accent);';p.textContent=v.prix+' €';
+      r.appendChild(l);r.appendChild(p);c2.appendChild(r);
+    });
+    zone.appendChild(c2);
+  }
+
+  // Erreurs
+  if((j.erreurs||[]).length){
+    var ce=document.createElement('div');ce.className='card';ce.style.cssText='background:#ef44440d;border-color:#ef444433;';
+    var et=document.createElement('div');et.className='card-title';et.innerHTML='<div class="icon" style="background:#ef444418;">⚠️</div>Erreurs fréquentes à éviter';ce.appendChild(et);
+    j.erreurs.forEach(function(e){var el=document.createElement('div');el.style.cssText='font-size:13px;color:#fca5a5;padding:4px 0;display:flex;gap:8px;';el.innerHTML='<span>•</span><span>'+e+'</span>';ce.appendChild(el);});
+    zone.appendChild(ce);
+  }
+
+  // Guide photos
+  var c3=document.createElement('div');c3.className='card';
+  var pt=document.createElement('div');pt.className='card-title';pt.innerHTML='<div class="icon">📸</div>Guide photos pas à pas';c3.appendChild(pt);
+  var ps=document.createElement('div');ps.style.cssText='font-size:12px;color:var(--text2);margin-bottom:14px;margin-top:-6px;';ps.textContent='Suis cet ordre pour maximiser les clics sur ton annonce';c3.appendChild(ps);
+  (j.photos||[]).forEach(function(p,i){
+    var row=document.createElement('div');row.className='photo-row';if(i===(j.photos.length-1))row.style.borderBottom='none';
+    var icon=document.createElement('div');icon.className='photo-icon';icon.textContent=p.emoji||'📷';
+    var info=document.createElement('div');info.style.flex='1';
+    var pn=document.createElement('div');pn.className='photo-num';pn.textContent='Photo '+p.num;
+    var pt2=document.createElement('div');pt2.className='photo-title';pt2.textContent=p.titre;
+    var pc=document.createElement('div');pc.className='photo-conseil';pc.textContent=p.conseil;
+    var pw=document.createElement('div');pw.className='photo-why';if(p.pourquoi)pw.textContent='💡 '+p.pourquoi;
+    info.appendChild(pn);info.appendChild(pt2);info.appendChild(pc);info.appendChild(pw);
+    row.appendChild(icon);row.appendChild(info);c3.appendChild(row);
+  });
+  zone.appendChild(c3);
+}
+
+function renderNego(j,zone){
+  zone.innerHTML='';
+  var card=document.createElement('div');card.className='card';
+  var title=document.createElement('div');title.className='card-title';title.innerHTML='<div class="icon">💬</div>Tes réponses suggérées';card.appendChild(title);
+
+  if(j.accepter){
+    var acc=document.createElement('div');acc.className='alert alert-green';acc.innerHTML='✅ <b>Conseil :</b> L\'offre est raisonnable, tu peux l\'accepter !';card.appendChild(acc);
+  }
+
+  [['😊 Réponse polie',j.reponse_polie,'#00d4aa'],['💪 Réponse ferme',j.reponse_ferme,'#6366f1'],['🤝 Compromis',j.reponse_compromis,'#f59e0b']].forEach(function(r){
+    var sec=document.createElement('div');sec.style.cssText='margin-bottom:14px;';
+    var lw=document.createElement('div');lw.className='row-sb';
+    var lb=document.createElement('span');lb.style.cssText='font-size:13px;font-weight:600;color:'+r[2]+';';lb.textContent=r[0];
+    var cb=document.createElement('button');cb.className='btn-copy';cb.textContent='Copier';
+    var txt=r[1];
+    cb.onclick=function(){navigator.clipboard.writeText(txt);cb.textContent='✓ Copié';cb.classList.add('ok');setTimeout(function(){cb.textContent='Copier';cb.classList.remove('ok');},2000);};
+    lw.appendChild(lb);lw.appendChild(cb);
+    var bx=document.createElement('div');bx.className='desc-box';bx.style.marginTop='6px';bx.textContent=r[1];
+    sec.appendChild(lw);sec.appendChild(bx);card.appendChild(sec);
+  });
+
+  if(j.conseil){
+    var tip=document.createElement('div');tip.className='astuce-box';tip.textContent='💡 '+j.conseil;card.appendChild(tip);
+  }
+  zone.appendChild(card);
+}
+
+function calcSim(){
+  var prix=parseFloat(document.getElementById('sim-prix').value)||0;
+  var achat=parseFloat(document.getElementById('sim-achat').value)||0;
+  if(!prix){document.getElementById('sim-result').innerHTML='';return;}
+  var fraisGumroad=prix*0.1;
+  var fraisVinted=prix*0.05+0.7;
+  var net=prix-fraisVinted;
+  var benefice=achat>0?net-achat:null;
+
+  var html='<div class="sim-result">';
+  html+='<div class="sim-row"><span style="color:var(--text2)">Prix de vente</span><span>'+prix.toFixed(2)+' €</span></div>';
+  html+='<div class="sim-row"><span style="color:var(--text2)">Commission Vinted (~5% + 0,70€)</span><span style="color:#ef4444">-'+fraisVinted.toFixed(2)+' €</span></div>';
+  html+='<div class="sim-row"><span style="color:var(--text2)">Tu reçois</span><span class="vert">'+net.toFixed(2)+' €</span></div>';
+  if(benefice!==null){
+    html+='<div class="sim-row"><span style="color:var(--text2)">Prix d\'achat</span><span style="color:#ef4444">-'+achat.toFixed(2)+' €</span></div>';
+    html+='<div class="sim-row"><span>Bénéfice net</span><span class="sim-total '+(benefice>=0?'vert':'rouge')+'">'+benefice.toFixed(2)+' €</span></div>';
+  } else {
+    html+='<div class="sim-row"><span>Tu reçois net</span><span class="sim-total vert">'+net.toFixed(2)+' €</span></div>';
+  }
+  html+='</div>';
+  document.getElementById('sim-result').innerHTML=html;
+}
+
+function renderChecklist(){
+  var z=document.getElementById('checklist-items');
+  z.innerHTML='';
+  CHECKLIST_ITEMS.forEach(function(item,i){
+    var row=document.createElement('div');row.className='check-item';
+    var box=document.createElement('div');box.className='check-box'+(checks[i]?' done':'');
+    box.textContent=checks[i]?'✓':'';
+    box.onclick=function(){checks[i]=!checks[i];renderChecklist();};
+    var txt=document.createElement('div');txt.className='check-text';txt.innerHTML=item.text;
+    row.appendChild(box);row.appendChild(txt);z.appendChild(row);
+  });
+}
+function resetChecklist(){checks=checks.map(function(){return false;});renderChecklist();}
+
+function renderConseils(){
+  var g=document.getElementById('conseils-grid');
+  CONSEILS_DATA.forEach(function(c){
+    var card=document.createElement('div');card.className='conseil-card';
+    card.innerHTML='<div class="conseil-icon">'+c.icon+'</div><div class="conseil-title">'+c.titre+'</div><div class="conseil-text">'+c.texte+'</div>';
+    g.appendChild(card);
+  });
+}
+
+function addHistory(input,result){
+  history.unshift({input:input,result:result,date:new Date().toLocaleTimeString()});
+  renderHistory();
+}
+function renderHistory(){
+  var z=document.getElementById('hist-zone');
+  if(!history.length){z.innerHTML='<div style="text-align:center;padding:3rem;color:var(--text2);font-size:14px;">Aucune annonce générée.</div>';return;}
+  z.innerHTML='';
+  history.forEach(function(h,i){
+    var item=document.createElement('div');item.className='hist-item';
+    var info=document.createElement('div');
+    var t=document.createElement('div');t.style.cssText='font-weight:600;font-size:13px;';t.textContent=h.result.titre;
+    var m=document.createElement('div');m.style.cssText='font-size:11px;color:var(--text2);margin-top:3px;';m.textContent=h.date+' · '+h.result.prix+' € · Score '+h.result.score+'/10';
+    info.appendChild(t);info.appendChild(m);
+    var btn=document.createElement('button');btn.className='btn btn-ghost';btn.style.cssText='font-size:12px;padding:6px 12px;';btn.textContent='Revoir';
+    btn.onclick=(function(idx){return function(){document.getElementById('input-article').value=history[idx].input;renderAnnonce(history[idx].result,document.getElementById('res-annonce'));showTab('annonce');};})(i);
+    item.appendChild(info);item.appendChild(btn);z.appendChild(item);
+  });
+}
+
+init();
+</script>
+</body>
+</html>
